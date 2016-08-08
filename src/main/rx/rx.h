@@ -49,13 +49,19 @@ typedef enum {
     SERIALRX_SBUS = 2,
     SERIALRX_SUMD = 3,
     SERIALRX_SUMH = 4,
-    SERIALRX_SRXL = 5, //formerly XBUS_MODE_B
+    SERIALRX_XBUS_MODE_B = 5,
     SERIALRX_XBUS_MODE_B_RJ01 = 6,
     SERIALRX_IBUS = 7,
     SERIALRX_PROVIDER_MAX = SERIALRX_IBUS
 } SerialRXType;
 
+typedef enum {
+    NRF24RX_V202_250K = 0,
+    NRF24RC_PROVIDER_MAX = NRF24RX_V202_250K
+} NRF24RXType;
+
 #define SERIALRX_PROVIDER_COUNT (SERIALRX_PROVIDER_MAX + 1)
+#define NRF24RX_PROVIDER_COUNT (NRF24RC_PROVIDER_MAX + 1)
 
 #define MAX_SUPPORTED_RC_PPM_CHANNEL_COUNT 12
 #define MAX_SUPPORTED_RC_PARALLEL_PWM_CHANNEL_COUNT 8
@@ -101,7 +107,7 @@ typedef enum {
 typedef struct rxFailsafeChannelConfiguration_s {
     uint8_t mode; // See rxFailsafeChannelMode_e
     uint8_t step;
-} rxFailsafeChannelConfig_t;
+} rxFailsafeChannelConfiguration_t;
 
 typedef struct rxChannelRangeConfiguration_s {
     uint16_t min;
@@ -111,6 +117,7 @@ typedef struct rxChannelRangeConfiguration_s {
 typedef struct rxConfig_s {
     uint8_t rcmap[MAX_MAPPABLE_RX_INPUTS];  // mapping of radio channels to internal RPYTA+ order
     uint8_t serialrx_provider;              // type of UART-based receiver (0 = spek 10, 1 = spek 11, 2 = sbus). Must be enabled by FEATURE_RX_SERIAL first.
+    uint8_t nrf24rx_provider;               // type of nrf24 protocol (0 = v202 250kbps). Must be enabled by FEATURE_RX_SPI first.
     uint8_t sbus_inversion;                 // default sbus (Futaba, FrSKY) is inverted. Support for uninverted OpenLRS (and modified FrSKY) receivers.
     uint8_t spektrum_sat_bind;              // number of bind pulses for Spektrum satellite receivers
     uint8_t rssi_channel;
@@ -123,18 +130,21 @@ typedef struct rxConfig_s {
 
     uint16_t rx_min_usec;
     uint16_t rx_max_usec;
-}  rxConfig_t;
+    rxFailsafeChannelConfiguration_t failsafe_channel_configurations[MAX_SUPPORTED_RC_CHANNEL_COUNT];
 
-PG_DECLARE(rxConfig_t, rxConfig);
+    rxChannelRangeConfiguration_t channelRanges[NON_AUX_CHANNEL_COUNT];
+} rxConfig_t;
 
-PG_DECLARE_ARR(rxFailsafeChannelConfig_t, MAX_SUPPORTED_RC_CHANNEL_COUNT, failsafeChannelConfigs);
-PG_DECLARE_ARR(rxChannelRangeConfiguration_t, NON_AUX_CHANNEL_COUNT, channelRanges);
+#define REMAPPABLE_CHANNEL_COUNT (sizeof(((rxConfig_t *)0)->rcmap) / sizeof(((rxConfig_t *)0)->rcmap[0]))
 
 typedef struct rxRuntimeConfig_s {
     uint8_t channelCount;                  // number of rc channels as reported by current input driver
+    uint8_t auxChannelCount;
 } rxRuntimeConfig_t;
 
 extern rxRuntimeConfig_t rxRuntimeConfig;
+
+void useRxConfig(rxConfig_t *rxConfigToUse);
 
 typedef uint16_t (*rcReadRawDataPtr)(rxRuntimeConfig_t *rxRuntimeConfig, uint8_t chan);        // used by receiver driver to return channel data
 
@@ -145,7 +155,7 @@ bool shouldProcessRx(uint32_t currentTime);
 void calculateRxChannelsAndUpdateFailsafe(uint32_t currentTime);
 
 void parseRcChannels(const char *input, rxConfig_t *rxConfig);
-uint8_t serialRxFrameStatus();
+uint8_t serialRxFrameStatus(rxConfig_t *rxConfig);
 
 void updateRSSI(uint32_t currentTime);
 void resetAllRxChannelRangeConfigurations(rxChannelRangeConfiguration_t *rxChannelRangeConfiguration);
@@ -154,5 +164,3 @@ void suspendRxSignal(void);
 void resumeRxSignal(void);
 
 void initRxRefreshRate(uint16_t *rxRefreshRatePtr);
-
-extern uint16_t rssi;

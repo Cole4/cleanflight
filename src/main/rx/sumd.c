@@ -21,11 +21,8 @@
 
 #include <platform.h>
 
-#include "build/build_config.h"
+#include "build_config.h"
 
-#include "config/parameter_group.h"
-
-#include "drivers/dma.h"
 #include "drivers/system.h"
 
 #include "drivers/serial.h"
@@ -52,8 +49,10 @@ static uint16_t crc;
 static void sumdDataReceive(uint16_t c);
 static uint16_t sumdReadRawRC(rxRuntimeConfig_t *rxRuntimeConfig, uint8_t chan);
 
-bool sumdInit(rxRuntimeConfig_t *rxRuntimeConfig, rcReadRawDataPtr *callback)
+bool sumdInit(rxConfig_t *rxConfig, rxRuntimeConfig_t *rxRuntimeConfig, rcReadRawDataPtr *callback)
 {
+    UNUSED(rxConfig);
+
     if (callback)
         *callback = sumdReadRawRC;
 

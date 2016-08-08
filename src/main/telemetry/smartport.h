@@ -8,7 +8,7 @@
 #ifndef TELEMETRY_SMARTPORT_H_
 #define TELEMETRY_SMARTPORT_H_
 
-void initSmartPortTelemetry(void);
+void initSmartPortTelemetry(telemetryConfig_t *);
 
 void handleSmartPortTelemetry(void);
 void checkSmartPortTelemetryState(void);

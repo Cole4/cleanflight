@@ -21,11 +21,8 @@
 
 #include <platform.h>
 
-#include "build/build_config.h"
+#include "build_config.h"
 
-#include "config/parameter_group.h"
-
-#include "drivers/dma.h"
 #include "drivers/system.h"
 
 #include "drivers/gpio.h"
@@ -81,11 +78,11 @@ static uint16_t sbusReadRawRC(rxRuntimeConfig_t *rxRuntimeConfig, uint8_t chan);
 
 static uint32_t sbusChannelData[SBUS_MAX_CHANNEL];
 
-bool sbusInit(rxRuntimeConfig_t *rxRuntimeConfig, rcReadRawDataPtr *callback)
+bool sbusInit(rxConfig_t *rxConfig, rxRuntimeConfig_t *rxRuntimeConfig, rcReadRawDataPtr *callback)
 {
     int b;
     for (b = 0; b < SBUS_MAX_CHANNEL; b++)
-        sbusChannelData[b] = (16 * rxConfig()->midrc) / 10 - 1408;
+        sbusChannelData[b] = (16 * rxConfig->midrc) / 10 - 1408;
     if (callback)
         *callback = sbusReadRawRC;
     rxRuntimeConfig->channelCount = SBUS_MAX_CHANNEL;
@@ -94,7 +91,7 @@ bool sbusInit(rxRuntimeConfig_t *rxRuntimeConfig, rcReadRawDataPtr *callback)
     if (!portConfig) {
         return false;
     }
-    portOptions_t options = (rxConfig()->sbus_inversion) ? (SBUS_PORT_OPTIONS | SERIAL_INVERTED) : SBUS_PORT_OPTIONS;
+    portOptions_t options = (rxConfig->sbus_inversion) ? (SBUS_PORT_OPTIONS | SERIAL_INVERTED) : SBUS_PORT_OPTIONS;
     serialPort_t *sBusPort = openSerialPort(portConfig->identifier, FUNCTION_RX_SERIAL, sbusDataReceive, SBUS_BAUDRATE, MODE_RX, options);
 
     return sBusPort != NULL;

@@ -22,20 +22,16 @@
 #include <limits.h>
 
 extern "C" {
-    #include "build/debug.h"
+    #include "debug.h"
 
     #include <platform.h>
 
     #include "common/axis.h"
 
-    #include "config/parameter_group.h"
-    #include "config/profile.h"
-
     #include "drivers/system.h"
     #include "drivers/serial.h"
 
-    #include "fc/runtime_config.h"
-    #include "fc/rc_controls.h"
+    #include "io/rc_controls.h"
     #include "io/serial.h"
     #include "io/gps.h"
 
@@ -47,6 +43,8 @@ extern "C" {
 
     #include "flight/pid.h"
     #include "flight/gps_conversion.h"
+
+    #include "config/runtime_config.h"
 }
 
 #include "unittest_macros.h"
@@ -221,7 +219,7 @@ void closeSerialPort(serialPort_t *serialPort) {
     UNUSED(serialPort);
 }
 
-serialPortConfig_t *findSerialPortConfig(uint16_t function) {
+serialPortConfig_t *findSerialPortConfig(serialPortFunction_e function) {
     UNUSED(function);
 
     return NULL;

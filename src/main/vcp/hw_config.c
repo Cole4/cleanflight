@@ -37,7 +37,7 @@
 
 #include <stdbool.h>
 
-#include "build/build_config.h"
+#include "build_config.h"
 
 #include "drivers/system.h"
 #include "drivers/usb_io.h"
@@ -340,19 +340,6 @@ uint8_t usbIsConfigured(void)
 uint8_t usbIsConnected(void)
 {
     return (bDeviceState != UNCONNECTED);
-}
-
-
-/*******************************************************************************
- * Function Name  : CDC_BaudRate.
- * Description    : Get the current baud rate
- * Input          : None.
- * Output         : None.
- * Return         : Baud rate in bps
- *******************************************************************************/
-uint32_t CDC_BaudRate(void)
-{
-    return Virtual_Com_Port_GetBaudRate();
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

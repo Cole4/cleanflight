@@ -17,6 +17,8 @@
 
 #pragma once
 
+extern uint16_t acc_1G; // FIXME move into acc_t
+
 typedef struct gyro_s {
     sensorGyroInitFuncPtr init;                             // initialize function
     sensorReadFuncPtr read;                                 // read 3 axis data function
@@ -26,9 +28,7 @@ typedef struct gyro_s {
 } gyro_t;
 
 typedef struct acc_s {
-    sensorAccInitFuncPtr init;                              // initialize function
+    sensorInitFuncPtr init;                                 // initialize function
     sensorReadFuncPtr read;                                 // read 3 axis data function
-    uint16_t acc_1G;
     char revisionCode;                                      // a revision code for the sensor, if known
 } acc_t;
-

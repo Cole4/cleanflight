@@ -57,25 +57,20 @@
 #include <string.h>
 
 #include <platform.h>
-#include "build/build_config.h"
-#include "build/debug.h"
+#include "build_config.h"
+#include "debug.h"
 
 #ifdef TELEMETRY
 
 #include "common/axis.h"
 
-#include "config/parameter_group.h"
-#include "config/parameter_group_ids.h"
-
 #include "drivers/system.h"
-
-#include "fc/rc_controls.h"
-#include "fc/fc_serial.h"
-#include "fc/runtime_config.h"
 
 #include "drivers/serial.h"
 #include "io/serial.h"
+#include "io/rc_controls.h"
 
+#include "config/runtime_config.h"
 
 #include "sensors/sensors.h"
 #include "sensors/battery.h"
@@ -88,12 +83,6 @@
 #include "telemetry/hott.h"
 
 //#define HOTT_DEBUG
-
-PG_REGISTER_WITH_RESET_TEMPLATE(hottTelemetryConfig_t, hottTelemetryConfig, PG_HOTT_TELEMETRY_CONFIG, 0);
-
-PG_RESET_TEMPLATE(hottTelemetryConfig_t, hottTelemetryConfig,
-    .hottAlarmSoundInterval = 5,
-);
 
 #define HOTT_MESSAGE_PREPARATION_FREQUENCY_5_HZ ((1000 * 1000) / 5)
 #define HOTT_RX_SCHEDULE 4000
@@ -118,6 +107,7 @@ static uint8_t hottMsgCrc;
 static serialPort_t *hottPort = NULL;
 static serialPortConfig_t *portConfig;
 
+static telemetryConfig_t *telemetryConfig;
 static bool hottTelemetryEnabled =  false;
 static portSharing_e hottPortSharing;
 
@@ -223,7 +213,7 @@ void hottPrepareGPSResponse(HOTT_GPS_MSG_t *hottGPSMessage)
 
 static bool shouldTriggerBatteryAlarmNow(void)
 {
-    return ((millis() - lastHottAlarmSoundTime) >= (hottTelemetryConfig()->hottAlarmSoundInterval * MILLISECONDS_IN_A_SECOND));
+    return ((millis() - lastHottAlarmSoundTime) >= (telemetryConfig->hottAlarmSoundInterval * MILLISECONDS_IN_A_SECOND));
 }
 
 static inline void updateAlarmBatteryStatus(HOTT_EAM_MSG_t *hottEAMMessage)
@@ -293,8 +283,9 @@ void freeHoTTTelemetryPort(void)
     hottTelemetryEnabled = false;
 }
 
-void initHoTTTelemetry(void)
+void initHoTTTelemetry(telemetryConfig_t *initialTelemetryConfig)
 {
+    telemetryConfig = initialTelemetryConfig;
     portConfig = findSerialPortConfig(FUNCTION_TELEMETRY_HOTT);
     hottPortSharing = determinePortSharing(portConfig, FUNCTION_TELEMETRY_HOTT);
 
@@ -336,16 +327,14 @@ static inline void hottSendEAMResponse(void)
     hottSendResponse((uint8_t *)&hottEAMMessage, sizeof(hottEAMMessage));
 }
 
-static void hottPrepareMessages(void)
-{
+static void hottPrepareMessages(void) {
     hottPrepareEAMResponse(&hottEAMMessage);
 #ifdef GPS
     hottPrepareGPSResponse(&hottGPSMessage);
 #endif
 }
 
-static void processBinaryModeRequest(uint8_t address)
-{
+static void processBinaryModeRequest(uint8_t address) {
 
 #ifdef HOTT_DEBUG
     static uint8_t hottBinaryRequests = 0;
@@ -444,7 +433,7 @@ static void hottSendTelemetryData(void) {
     if (!hottIsSending) {
         hottIsSending = true;
         // FIXME temorary workaround for HoTT not working on Hardware serial ports due to hardware/softserial serial port initialisation differences
-        if ((portConfig->identifier == SERIAL_PORT_UART1) || (portConfig->identifier == SERIAL_PORT_UART2) || (portConfig->identifier == SERIAL_PORT_UART3))
+        if ((portConfig->identifier == SERIAL_PORT_USART1) || (portConfig->identifier == SERIAL_PORT_USART2) || (portConfig->identifier == SERIAL_PORT_USART3))
         	workAroundForHottTelemetryOnUsart(hottPort, MODE_TX);
         else
         	serialSetMode(hottPort, MODE_TX);
@@ -456,7 +445,7 @@ static void hottSendTelemetryData(void) {
         hottMsg = NULL;
         hottIsSending = false;
         // FIXME temorary workaround for HoTT not working on Hardware serial ports due to hardware/softserial serial port initialisation differences
-        if ((portConfig->identifier == SERIAL_PORT_UART1) || (portConfig->identifier == SERIAL_PORT_UART2) || (portConfig->identifier == SERIAL_PORT_UART3))
+        if ((portConfig->identifier == SERIAL_PORT_USART1) || (portConfig->identifier == SERIAL_PORT_USART2) || (portConfig->identifier == SERIAL_PORT_USART3))
         	workAroundForHottTelemetryOnUsart(hottPort, MODE_RX);
         else
         	serialSetMode(hottPort, MODE_RX);

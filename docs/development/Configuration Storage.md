@@ -1,21 +1,15 @@
 # Configuration
 
-The configuration in cleanflight is stored at the end of the flash ram, currently it uses 2-4KB of flash depending on the target.
+The configuration in cleanflight is stored at the end of the flash ram, currently it uses 2KB of flash.
 
-Sometimes it's necessary to erase this during development.
+Sometimes it's necesaary to erase this during development.
 
 ## Erasing
 
-Generate a 2-4kb blank file.
+Generate a 2kb blank file.
 
-2kb:
 ```
 dd if=/dev/zero of=obj/blankconfig.bin bs=1024 count=2
-```
-
-4kb:
-```
-dd if=/dev/zero of=obj/blankconfig.bin bs=1024 count=4
 ```
 
 Overwrite configuration using JLink
@@ -26,21 +20,9 @@ Execute commands
 `device <your device>`, e.g. `STM32F303CB`
 `r`
 `h` 
-`loadbin obj/blankconfig.bin, <address>`
+`loadbin obj/blankconfig.bin, <address>`, address 128k device = 0x801F800, 256k device = 0x803f800
 `r` to Reboot FC.
 `q` to quit
-
-
-the address is the address of the end of the flash ram minus the size of the configuration.
-
-example addresses:
-```
-64k device/2kb config = 0x800F800
-128k device/2kb config = 0x801F800
-128k device/4kb config = 0x801F000
-256k device/2kb config = 0x803f800
-256k device/4kb config = 0x803f000
-```
 
 Example session
 

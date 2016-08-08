@@ -74,6 +74,8 @@ void ws2811LedStripHardwareInit(void)
     TIM_CtrlPWMOutputs(TIM3, ENABLE);
 
     /* configure DMA */
+    /* DMA clock enable */
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
 
     /* DMA1 Channel6 Config */
     DMA_DeInit(DMA1_Channel6);
@@ -98,7 +100,14 @@ void ws2811LedStripHardwareInit(void)
 
     DMA_ITConfig(DMA1_Channel6, DMA_IT_TC, ENABLE);
 
-    const hsvColor_t hsv_white = {  0, 255, 255};
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel6_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_PRIORITY_BASE(NVIC_PRIO_WS2811_DMA);
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = NVIC_PRIORITY_SUB(NVIC_PRIO_WS2811_DMA);
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
     setStripColor(&hsv_white);
     ws2811UpdateStrip();
 }

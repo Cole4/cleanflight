@@ -36,14 +36,12 @@
 
 #include <platform.h>
 
-#include "build/build_config.h"
-
-#include "config/parameter_group.h"
+#include "build_config.h"
 
 #include "drivers/serial.h"
 #include "io/serial.h"
 
-#include "build/build_config.h"
+#include "build_config.h"
 #include "printf.h"
 
 #ifdef REQUIRE_PRINTF_LONG_SUPPORT

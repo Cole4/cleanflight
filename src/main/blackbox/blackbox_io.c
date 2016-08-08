@@ -15,39 +15,69 @@
  * along with Cleanflight.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 
-#include <platform.h>
+#include "blackbox_io.h"
 
-#include "build/build_config.h"
+#include "version.h"
+#include "build_config.h"
 
 #include "common/maths.h"
+#include "common/axis.h"
+#include "common/color.h"
 #include "common/encoding.h"
 
-#include "config/parameter_group.h"
-
+#include "drivers/gpio.h"
+#include "drivers/sensor.h"
+#include "drivers/system.h"
 #include "drivers/serial.h"
+#include "drivers/compass.h"
+#include "drivers/timer.h"
+#include "drivers/pwm_rx.h"
+#include "drivers/accgyro.h"
+#include "drivers/light_led.h"
+#include "drivers/sound_beeper.h"
 #include "drivers/gyro_sync.h"
-#include "common/streambuf.h"
 
+#include "io/rc_controls.h"
 
-#include "fc/rc_controls.h"
-#include "fc/fc_serial.h"
+#include "sensors/sensors.h"
+#include "sensors/boardalignment.h"
+#include "sensors/acceleration.h"
+#include "sensors/barometer.h"
+#include "sensors/gyro.h"
+#include "sensors/battery.h"
 
+#include "io/beeper.h"
+#include "io/display.h"
+#include "io/escservo.h"
+
+#include "io/gimbal.h"
+#include "io/gps.h"
+#include "io/ledstrip.h"
 #include "io/serial.h"
-#include "msp/msp.h"
-#include "msp/msp_serial.h"
-
+#include "io/serial_cli.h"
+#include "io/serial_msp.h"
+#include "io/statusindicator.h"
+#include "rx/msp.h"
+#include "telemetry/telemetry.h"
 #include "common/printf.h"
+
+#include "flight/mixer.h"
+#include "flight/altitudehold.h"
+#include "flight/failsafe.h"
+#include "flight/imu.h"
+#include "flight/navigation.h"
+
+#include "config/runtime_config.h"
+#include "config/config.h"
+#include "config/config_profile.h"
+#include "config/config_master.h"
 
 #include "io/flashfs.h"
 #include "io/asyncfatfs/asyncfatfs.h"
-
-#include "blackbox.h"
-#include "blackbox_io.h"
 
 #ifdef BLACKBOX
 
@@ -84,7 +114,7 @@ static struct {
 
 void blackboxWrite(uint8_t value)
 {
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
 #ifdef USE_FLASHFS
         case BLACKBOX_DEVICE_FLASH:
             flashfsWriteByte(value); // Write byte asynchronously
@@ -156,7 +186,7 @@ int blackboxPrint(const char *s)
     int length;
     const uint8_t *pos;
 
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
 
 #ifdef USE_FLASHFS
         case BLACKBOX_DEVICE_FLASH:
@@ -232,8 +262,7 @@ void blackboxWriteS16(int16_t value)
 /**
  * Write a 2 bit tag followed by 3 signed fields of 2, 4, 6 or 32 bits
  */
-void blackboxWriteTag2_3S32(int32_t *values)
-{
+void blackboxWriteTag2_3S32(int32_t *values) {
     static const int NUM_FIELDS = 3;
 
     //Need to be enums rather than const ints if we want to switch on them (due to being C)
@@ -357,8 +386,7 @@ void blackboxWriteTag2_3S32(int32_t *values)
 /**
  * Write an 8-bit selector followed by four signed fields of size 0, 4, 8 or 16 bits.
  */
-void blackboxWriteTag8_4S16(int32_t *values)
-{
+void blackboxWriteTag8_4S16(int32_t *values) {
 
     //Need to be enums rather than const ints if we want to switch on them (due to being C)
     enum {
@@ -500,7 +528,7 @@ void blackboxWriteFloat(float value)
  */
 void blackboxDeviceFlush(void)
 {
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
 #ifdef USE_FLASHFS
         /*
          * This is our only output device which requires us to call flush() in order for it to write anything. The other
@@ -523,7 +551,7 @@ void blackboxDeviceFlush(void)
  */
 bool blackboxDeviceFlushForce(void)
 {
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
         case BLACKBOX_DEVICE_SERIAL:
             // Nothing to speed up flushing on serial, as serial is continuously being drained out of its buffer
             return isSerialTransmitBufferEmpty(blackboxPort);
@@ -551,7 +579,7 @@ bool blackboxDeviceFlushForce(void)
  */
 bool blackboxDeviceOpen(void)
 {
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
         case BLACKBOX_DEVICE_SERIAL:
             {
                 serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_BLACKBOX);
@@ -563,7 +591,7 @@ bool blackboxDeviceOpen(void)
                 }
 
                 blackboxPortSharing = determinePortSharing(portConfig, FUNCTION_BLACKBOX);
-                baudRateIndex = portConfig->baudRates[BAUDRATE_BLACKBOX];
+                baudRateIndex = portConfig->blackbox_baudrateIndex;
 
                 if (baudRates[baudRateIndex] == 230400) {
                     /*
@@ -625,7 +653,7 @@ bool blackboxDeviceOpen(void)
  */
 void blackboxDeviceClose(void)
 {
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
         case BLACKBOX_DEVICE_SERIAL:
             // Since the serial port could be shared with other processes, we have to give it back here
             closeSerialPort(blackboxPort);
@@ -636,7 +664,7 @@ void blackboxDeviceClose(void)
              * of time to shut down asynchronously, we're the only ones that know when to call it.
              */
             if (blackboxPortSharing == PORTSHARING_SHARED) {
-                mspSerialAllocatePorts();
+                mspAllocateSerialPorts(&masterConfig.serialConfig);
             }
         break;
         default:
@@ -781,7 +809,7 @@ static bool blackboxSDCardBeginLog()
  */
 bool blackboxDeviceBeginLog(void)
 {
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
 #ifdef USE_SDCARD
         case BLACKBOX_DEVICE_SDCARD:
             return blackboxSDCardBeginLog();
@@ -805,7 +833,7 @@ bool blackboxDeviceEndLog(bool retainLog)
     (void) retainLog;
 #endif
 
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
 #ifdef USE_SDCARD
         case BLACKBOX_DEVICE_SDCARD:
             // Keep retrying until the close operation queues
@@ -827,7 +855,7 @@ bool blackboxDeviceEndLog(bool retainLog)
 
 bool isBlackboxDeviceFull(void)
 {
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
         case BLACKBOX_DEVICE_SERIAL:
             return false;
 
@@ -854,7 +882,7 @@ void blackboxReplenishHeaderBudget()
 {
     int32_t freeSpace;
 
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
         case BLACKBOX_DEVICE_SERIAL:
             freeSpace = serialTxBytesFree(blackboxPort);
         break;
@@ -900,7 +928,7 @@ blackboxBufferReserveStatus_e blackboxDeviceReserveBufferSpace(int32_t bytes)
     }
 
     // Handle failure:
-    switch (blackboxConfig()->device) {
+    switch (masterConfig.blackbox_device) {
         case BLACKBOX_DEVICE_SERIAL:
             /*
              * One byte of the tx buffer isn't available for user data (due to its circular list implementation),

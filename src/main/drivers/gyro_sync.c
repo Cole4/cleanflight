@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 #include <platform.h>
-#include "build/build_config.h"
+#include "build_config.h"
 
 #include "common/axis.h"
 #include "common/maths.h"
@@ -28,34 +28,37 @@
 #include "drivers/accgyro.h"
 #include "drivers/gyro_sync.h"
 
+#include "config/runtime_config.h"
+#include "config/config.h"
+
 extern gyro_t gyro;
 
 uint32_t targetLooptime;
-static uint8_t mpuDividerDrops;
+uint8_t mpuDividerDrops;
 
-bool gyroSyncCheckUpdate(void)
-{
+bool gyroSyncCheckUpdate(void) {
     return gyro.isDataReady && gyro.isDataReady();
 }
 
-void gyroSetSampleRate(uint32_t looptime, uint8_t lpf, uint8_t gyroSync, uint8_t gyroSyncDenominator)
-{
+void gyroUpdateSampleRate(uint32_t looptime, uint8_t lpf, uint8_t gyroSync, uint8_t gyroSyncDenominator) {
+    int gyroSamplePeriod;
+
     if (gyroSync) {
-        int gyroSamplePeriod;
-        if (lpf == 0) {
+        if (!lpf) {
             gyroSamplePeriod = 125;
+
         } else {
             gyroSamplePeriod = 1000;
         }
-        mpuDividerDrops = gyroSyncDenominator - 1;
-        targetLooptime = gyroSyncDenominator * gyroSamplePeriod;
+
+        mpuDividerDrops  = gyroSyncDenominator - 1;
+        targetLooptime = (mpuDividerDrops + 1) * gyroSamplePeriod;
     } else {
-        mpuDividerDrops = 0;
-        targetLooptime = looptime;
+    	mpuDividerDrops = 0;
+    	targetLooptime = looptime;
     }
 }
 
-uint8_t gyroMPU6xxxCalculateDivider(void)
-{
+uint8_t gyroMPU6xxxCalculateDivider(void) {
     return mpuDividerDrops;
 }

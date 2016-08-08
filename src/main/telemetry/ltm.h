@@ -20,7 +20,7 @@
 #ifndef TELEMETRY_LTM_H_
 #define TELEMETRY_LTM_H_
 
-void initLtmTelemetry(void);
+void initLtmTelemetry(telemetryConfig_t *initialTelemetryConfig);
 void handleLtmTelemetry(void);
 void checkLtmTelemetryState(void);
 

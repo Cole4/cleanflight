@@ -26,78 +26,17 @@
 
 #include <platform.h>
 
-#include "build/build_config.h"
+#include "build_config.h"
 
 #include "common/utils.h"
 #include "gpio.h"
 #include "inverter.h"
 
-#include "dma.h"
 #include "serial.h"
 #include "serial_uart.h"
 #include "serial_uart_impl.h"
-#ifdef STM32F10X
-#include "serial_uart_stm32f10x.h"
-#endif
-#ifdef STM32F303xC
-#include "serial_uart_stm32f30x.h"
-#endif
 
-void usartInitAllIOSignals(void)
-{
-#ifdef STM32F10X
-    // Set UART1 TX to output and high state to prevent a rs232 break condition on reset.
-    // See issue https://github.com/cleanflight/cleanflight/issues/1433
-    gpio_config_t gpio;
-
-    gpio.mode = Mode_Out_PP;
-    gpio.speed = Speed_2MHz;
-    gpio.pin = UART1_TX_PIN;
-    digitalHi(UART1_GPIO, gpio.pin);
-    gpioInit(UART1_GPIO, &gpio);
-
-    // Set TX of UART2 and UART3 to input with pull-up to prevent floating TX outputs.
-    gpio.mode = Mode_IPU;
-
-#ifdef USE_UART2
-    gpio.pin = UART2_TX_PIN;
-    gpioInit(UART2_GPIO, &gpio);
-#endif
-
-#ifdef USE_UART3
-    gpio.pin = UART3_TX_PIN;
-    gpioInit(UART3_GPIO, &gpio);
-#endif
-
-#endif
-
-#ifdef STM32F303
-    // Set TX for UART1, UART2 and UART3 to input with pull-up to prevent floating TX outputs.
-    gpio_config_t gpio;
-
-    gpio.mode = Mode_IPU;
-    gpio.speed = Speed_2MHz;
-
-#ifdef USE_UART1
-    gpio.pin = UART1_TX_PIN;
-    gpioInit(UART1_GPIO, &gpio);
-#endif
-
-//#ifdef USE_UART2
-//    gpio.pin = UART2_TX_PIN;
-//    gpioInit(UART2_GPIO, &gpio);
-//#endif
-
-#ifdef USE_UART3
-    gpio.pin = UART3_TX_PIN;
-    gpioInit(UART3_GPIO, &gpio);
-#endif
-
-#endif
-}
-
-static void usartConfigurePinInversion(uartPort_t *uartPort)
-{
+static void usartConfigurePinInversion(uartPort_t *uartPort) {
 #if !defined(INVERTER) && !defined(STM32F303xC)
     UNUSED(uartPort);
 #else
@@ -160,22 +99,14 @@ serialPort_t *uartOpen(USART_TypeDef *USARTx, serialReceiveCallbackPtr callback,
     uartPort_t *s = NULL;
 
     if (USARTx == USART1) {
-        s = serialUART1(baudRate, mode, options);
-#ifdef USE_UART2
+        s = serialUSART1(baudRate, mode, options);
+#ifdef USE_USART2
     } else if (USARTx == USART2) {
-        s = serialUART2(baudRate, mode, options);
+        s = serialUSART2(baudRate, mode, options);
 #endif
-#ifdef USE_UART3
+#ifdef USE_USART3
     } else if (USARTx == USART3) {
-        s = serialUART3(baudRate, mode, options);
-#endif
-#ifdef USE_UART4
-    } else if (USARTx == UART4) {
-        s = serialUART4(baudRate, mode, options);
-#endif
-#ifdef USE_UART5
-    } else if (USARTx == UART5) {
-        s = serialUART5(baudRate, mode, options);
+        s = serialUSART3(baudRate, mode, options);
 #endif
     } else {
         return (serialPort_t *)s;

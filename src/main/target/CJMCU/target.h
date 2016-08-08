@@ -45,8 +45,8 @@
 
 #define BRUSHED_MOTORS
 
-#define USE_UART1
-#define USE_UART2
+#define USE_USART1
+#define USE_USART2
 
 #define SERIAL_PORT_COUNT 2
 
@@ -57,16 +57,35 @@
 // #define SOFT_I2C_PB1011 // If SOFT_I2C is enabled above, need to define pinout as well (I2C1 = PB67, I2C2 = PB1011)
 // #define SOFT_I2C_PB67
 
-#define DEFAULT_RX_FEATURE FEATURE_RX_PPM
-
 #define SERIAL_RX
 //#define USE_SERVOS
 #define USE_CLI
 
 #define SPEKTRUM_BIND
-// UART2, PA3
+// USART2, PA3
 #define BIND_PORT  GPIOA
 #define BIND_PIN   Pin_3
+
+#define NRF24_RX
+
+// v202 protocol @ 250kbps
+#define NRF24_PROVIDER NRF24RX_V202_250K
+
+#define USE_SPI
+#define USE_SPI_DEVICE_1
+
+#define NRF24_SPI_INSTANCE       SPI1
+#define USE_NRF24_SPI1
+
+#define NRF24_CE_GPIO   GPIOA
+#define NRF24_CE_PIN    GPIO_Pin_4
+#define NRF24_CE_GPIO_CLK_PERIPHERAL RCC_APB2Periph_GPIOA
+#define NRF24_CS_GPIO   GPIOA
+#define NRF24_CS_PIN    GPIO_Pin_11
+#define NRF24_CS_GPIO_CLK_PERIPHERAL RCC_APB2Periph_GPIOA
+#define NRF24_IRQ_GPIO   GPIOA
+#define NRF24_IRQ_PIN    GPIO_Pin_8
+#define NRF24_IRQ_GPIO_CLK_PERIPHERAL RCC_APB2Periph_GPIOA
 
 // Since the CJMCU PCB has holes for 4 motors in each corner we can save same flash space by disabling support for other mixers.
 #define USE_QUAD_MIXER_ONLY

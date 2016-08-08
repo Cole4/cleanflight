@@ -8,14 +8,13 @@ The core set of recommended boards are:
 
 * [Seriously Pro SPRacingF3Mini](Board%20-%20SPRacingF3Mini.md)
 * [Seriously Pro SPRacingF3](Board%20-%20SPRacingF3.md)
-* [Seriously Pro SPRacingF3EVO](Board%20-%20SPRacingF3Evo.md)
 * [TBS Colibri Race](Board%20-%20ColibriRace.md)
-* [AlienFlightF3](Board%20-%20AlienFlight.md)
+* [AlienWiiF3](Board%20-%20AlienWii32.md)
 * [TauLabs Sparky](Board%20-%20Sparky.md)
 
 The core set of legacy boards are:
 
-* [AlienFlightF1](Board%20-%20AlienFlight.md)
+* [AlienWii32](Board%20-%20AlienWii32.md)
 * [OpenPilot CC3D](Board%20-%20CC3D.md)
 * [CJMCU](Board%20-%20CJMCU.md)
 * Flip32+

@@ -31,7 +31,7 @@
 #define BEEP_PERIPHERAL RCC_AHBPeriph_GPIOC
 #define BEEPER_INVERTED
 
-#define USABLE_TIMER_CHANNEL_COUNT 12 // 8 Outputs; PPM; LED Strip; 2 additional PWM pins also on UART3 RX/TX pins.
+#define USABLE_TIMER_CHANNEL_COUNT 14 // 8 Outputs; PPM; LED Strip; SonarPads; 2 additional PWM pins also on UART3 RX/TX pins.
 
 #define EXTI15_10_CALLBACK_HANDLER_COUNT 2 // MPU_INT, SDCardDetect
 
@@ -58,22 +58,14 @@
 
 #define MAG
 #define USE_MPU9250_MAG // Enables bypass configuration
-#define USE_MAG_AK8963
+#define USE_MAG_AK8975
 #define USE_MAG_HMC5883 // External
 
-#define MAG_AK8963_ALIGN CW90_DEG_FLIP
-
-#define BEEPER
-#define LED0
+#define MAG_AK8975_ALIGN CW270_DEG_FLIP
 
 #define SONAR
-#define SONAR_TRIGGER_PIN           Pin_0   // RC_CH7 (PB0) - only 3.3v ( add a 1K Ohms resistor )
-#define SONAR_TRIGGER_GPIO          GPIOB
-#define SONAR_ECHO_PIN              Pin_1   // RC_CH8 (PB1) - only 3.3v ( add a 1K Ohms resistor )
-#define SONAR_ECHO_GPIO             GPIOB
-#define SONAR_EXTI_LINE             EXTI_Line1
-#define SONAR_EXTI_PIN_SOURCE       EXTI_PinSource1
-#define SONAR_EXTI_IRQN             EXTI1_IRQn
+#define BEEPER
+#define LED0
 
 #define USB_IO
 #define USB_CABLE_DETECTION
@@ -83,9 +75,9 @@
 #define USB_DETECT_GPIO_CLK              RCC_AHBPeriph_GPIOC
 
 #define USE_VCP
-#define USE_UART1
-#define USE_UART2
-#define USE_UART3
+#define USE_USART1
+#define USE_USART2
+#define USE_USART3
 #define USE_SOFTSERIAL1
 #define SERIAL_PORT_COUNT 5
 
@@ -115,8 +107,8 @@
 #endif
 
 #define SOFTSERIAL_1_TIMER TIM2
-#define SOFTSERIAL_1_TIMER_RX_HARDWARE 9  // PA0
-#define SOFTSERIAL_1_TIMER_TX_HARDWARE 10 // PA1
+#define SOFTSERIAL_1_TIMER_RX_HARDWARE 9 // PA0 / PAD3
+#define SOFTSERIAL_1_TIMER_TX_HARDWARE 10 // PA1 / PAD4
 
 #define USE_I2C
 #define I2C_DEVICE (I2CDEV_1) // PB6/SCL, PB7/SDA
@@ -167,27 +159,22 @@
 #define USE_ADC
 #define BOARD_HAS_VOLTAGE_DIVIDER
 
+
 #define ADC_INSTANCE                ADC2
 #define ADC_DMA_CHANNEL             DMA2_Channel1
 #define ADC_AHB_PERIPHERAL          RCC_AHBPeriph_DMA2
 
-#define ADC0_GPIO                   GPIOA
-#define ADC0_GPIO_PIN               GPIO_Pin_4
-#define ADC0_CHANNEL                ADC_Channel_1
+#define VBAT_ADC_GPIO               GPIOA
+#define VBAT_ADC_GPIO_PIN           GPIO_Pin_4
+#define VBAT_ADC_CHANNEL            ADC_Channel_1
 
-#define ADC1_GPIO                   GPIOA
-#define ADC1_GPIO_PIN               GPIO_Pin_5
-#define ADC1_CHANNEL                ADC_Channel_2
+#define CURRENT_METER_ADC_GPIO      GPIOA
+#define CURRENT_METER_ADC_GPIO_PIN  GPIO_Pin_5
+#define CURRENT_METER_ADC_CHANNEL   ADC_Channel_2
 
-#define ADC2_GPIO                   GPIOB
-#define ADC2_GPIO_PIN               GPIO_Pin_2
-#define ADC2_CHANNEL                ADC_Channel_12
-
-#define ADC_CHANNEL_COUNT 3
-
-#define ADC_BATTERY     ADC_CHANNEL0
-#define ADC_CURRENT     ADC_CHANNEL1
-#define ADC_RSSI        ADC_CHANNEL2
+#define RSSI_ADC_GPIO               GPIOB
+#define RSSI_ADC_GPIO_PIN           GPIO_Pin_2
+#define RSSI_ADC_CHANNEL            ADC_Channel_12
 
 #define LED_STRIP
 #define LED_STRIP_TIMER TIM1
@@ -202,7 +189,7 @@
 #define WS2811_DMA_CHANNEL              DMA1_Channel2
 #define WS2811_IRQ                      DMA1_Channel2_IRQn
 #define WS2811_DMA_TC_FLAG              DMA1_FLAG_TC2
-#define WS2811_DMA_HANDLER_IDENTIFER    DMA1Channel2Descriptor
+#define WS2811_DMA_HANDLER_IDENTIFER    DMA1_CH2_HANDLER
 
 #define TRANSPONDER
 #define TRANSPONDER_GPIO                     GPIOA
@@ -215,18 +202,16 @@
 #define TRANSPONDER_DMA_CHANNEL              DMA1_Channel2
 #define TRANSPONDER_IRQ                      DMA1_Channel2_IRQn
 #define TRANSPONDER_DMA_TC_FLAG              DMA1_FLAG_TC2
-#define TRANSPONDER_DMA_HANDLER_IDENTIFER    DMA1Channel2Descriptor
+#define TRANSPONDER_DMA_HANDLER_IDENTIFER    DMA1_CH2_HANDLER
 
 #define REDUCE_TRANSPONDER_CURRENT_DRAW_WHEN_USB_CABLE_PRESENT
-
-#define DEFAULT_RX_FEATURE FEATURE_RX_PPM
 
 #define GPS
 #define BLACKBOX
 #define ENABLE_BLACKBOX_LOGGING_ON_SDCARD_BY_DEFAULT
 #define TELEMETRY
 #define SERIAL_RX
-#define GTUNE
+#define AUTOTUNE
 #define DISPLAY
 #define USE_SERVOS
 #define USE_CLI
@@ -246,4 +231,9 @@
 #define BINDPLUG_PORT  BUTTON_B_PORT
 #define BINDPLUG_PIN   BUTTON_B_PIN
 
-#define USE_SERIAL_4WAY_BLHELI_INTERFACE
+#define USE_SERIAL_1WIRE
+
+#define S1W_TX_GPIO         UART1_GPIO
+#define S1W_TX_PIN          UART1_TX_PIN
+#define S1W_RX_GPIO         UART1_GPIO
+#define S1W_RX_PIN          UART1_RX_PIN
