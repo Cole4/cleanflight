@@ -15,7 +15,7 @@
 #
 
 # The target to build, see VALID_TARGETS below
-TARGET		?= NAZE
+TARGET		?= CRAZEPONYMINI
 
 # Compile-time options
 OPTIONS		?=
@@ -450,6 +450,7 @@ CRAZEPONYMINI_SRC = \
 		   drivers/adc_stm32f10x.c \
 		   drivers/accgyro_mpu.c \
 		   drivers/accgyro_mpu6050.c \
+		   drivers/compass_ist8310.c \
 		   drivers/bus_i2c_stm32f10x.c \
 		   drivers/gpio_stm32f10x.c \
 		   drivers/light_led_stm32f10x.c \
