@@ -87,12 +87,12 @@ static void mpu6050AccInit(void)
     mpuIntExtiInit();
 
     switch (mpuDetectionResult.resolution) {
-        case MPU_HALF_RESOLUTION:
-            acc_1G = 256 * 8;
-            break;
-        case MPU_FULL_RESOLUTION:
-            acc_1G = 512 * 8;
-            break;
+    case MPU_HALF_RESOLUTION:
+        acc_1G = 256 * 8;
+        break;
+    case MPU_FULL_RESOLUTION:
+        acc_1G = 512 * 8;
+        break;
     }
 }
 
@@ -106,7 +106,7 @@ static void mpu6050GyroInit(uint8_t lpf)
     delay(100);
     ack = mpuConfiguration.write(MPU_RA_PWR_MGMT_1, 0x03); //PWR_MGMT_1    -- SLEEP 0; CYCLE 0; TEMP_DIS 0; CLKSEL 3 (PLL with Z Gyro reference)
     ack = mpuConfiguration.write(MPU_RA_SMPLRT_DIV, gyroMPU6xxxCalculateDivider()); //SMPLRT_DIV    -- SMPLRT_DIV = 0  Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV)
-    delay(15); //PLL Settling time when changing CLKSEL is max 10ms.  Use 15ms to be sure 
+    delay(15); //PLL Settling time when changing CLKSEL is max 10ms.  Use 15ms to be sure
     ack = mpuConfiguration.write(MPU_RA_CONFIG, lpf); //CONFIG        -- EXT_SYNC_SET 0 (disable input pin for data sync) ; default DLPF_CFG = 0 => ACC bandwidth = 260Hz  GYRO bandwidth = 256Hz)
     ack = mpuConfiguration.write(MPU_RA_GYRO_CONFIG, INV_FSR_2000DPS << 3);   //GYRO_CONFIG   -- FS_SEL = 3: Full scale set to 2000 deg/sec
 
@@ -114,8 +114,21 @@ static void mpu6050GyroInit(uint8_t lpf)
     // Accel scale 8g (4096 LSB/g)
     ack = mpuConfiguration.write(MPU_RA_ACCEL_CONFIG, INV_FSR_8G << 3);
 
-    ack = mpuConfiguration.write(MPU_RA_INT_PIN_CFG,
-            0 << 7 | 0 << 6 | 0 << 5 | 0 << 4 | 0 << 3 | 0 << 2 | 1 << 1 | 0 << 0); // INT_PIN_CFG   -- INT_LEVEL_HIGH, INT_OPEN_DIS, LATCH_INT_DIS, INT_RD_CLEAR_DIS, FSYNC_INT_LEVEL_HIGH, FSYNC_INT_DIS, I2C_BYPASS_EN, CLOCK_DIS
+    // ack = mpuConfiguration.write(MPU_RA_INT_PIN_CFG,
+    //         0 << 7 | 0 << 6 | 0 << 5 | 0 << 4 | 0 << 3 | 0 << 2 | 1 << 1 | 0 << 0); // INT_PIN_CFG   -- INT_LEVEL_HIGH, INT_OPEN_DIS, LATCH_INT_DIS, INT_RD_CLEAR_DIS, FSYNC_INT_LEVEL_HIGH, FSYNC_INT_DIS, I2C_BYPASS_EN, CLOCK_DIS
+ 
+    ack = mpuConfiguration.write(MPU_RA_USER_CTRL, 0x00 );
+    ack = mpuConfiguration.write(MPU_RA_INT_PIN_CFG, 0x02 );
+    // ack = mpuConfiguration.write(MPU_RA_PWR_MGMT_1, 0x03);
+    delay(10);
+
+    // There are three steps required to activate the bypass mode of MPU 6050:
+    // 1. set I2C Master enable bit (I2C_MST_EN, bit 5)  in user control register (USER_CTRL , 0x6A) to 0 (on MPU5060 power up it is already equeal zero).
+    // 2. set I2C Bypass enable bit (I2C_BYPASS_EN,bit 2) in INT Pin / Bypass Enable Configuration register (INT_PIN_CFG,0x37) to 1.
+    // 3. Turn off sleep mode by reseting SLEEP bit (bit 6) of the power management register #1 (PWR_MGMT_1, 0x6B).
+    // MPU6050_write_reg (0x6A, 0);
+    // MPU6050_write_reg (0x37, 2);
+    // MPU6050_write_reg (0x6B, 0);
 
 #ifdef USE_MPU_DATA_READY_SIGNAL
     ack = mpuConfiguration.write(MPU_RA_INT_ENABLE, MPU_RF_DATA_RDY_EN);

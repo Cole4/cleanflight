@@ -437,7 +437,7 @@ CJMCU_SRC = \
 		   drivers/system_stm32f10x.c \
 		   drivers/timer.c \
 		   drivers/timer_stm32f10x.c \
-		   hardware_revision.c \
+		   hardware_revision.c \sensors/barometer.c \
 		   rx/v202.c \
 		   flight/gtune.c \
 		   blackbox/blackbox.c \

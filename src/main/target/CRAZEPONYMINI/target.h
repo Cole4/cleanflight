@@ -53,7 +53,7 @@
 
 #define SERIAL_PORT_COUNT 1
 
-#define USE_ADC
+//#define USE_ADC
 
 #define BOARD_HAS_VOLTAGE_DIVIDER
 #define VBAT_ADC_GPIO               GPIOB
