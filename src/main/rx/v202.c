@@ -132,7 +132,8 @@ void initV202rx(void)
     NRF24L01_WriteReg(NRF24L01_02_EN_RXADDR, 0x01);  // Enable data pipe 0
     NRF24L01_WriteReg(NRF24L01_03_SETUP_AW, 0x03);   // 5-byte RX/TX address
     NRF24L01_WriteReg(NRF24L01_04_SETUP_RETR, 0xFF); // 4ms retransmit t/o, 15 tries
-    NRF24L01_SetBitrate(NRF24L01_BR_250K);
+    // NRF24L01_SetBitrate(NRF24L01_BR_250K);
+    NRF24L01_SetBitrate(NRF24L01_BR_1M);
     NRF24L01_SetPower(3);
     NRF24L01_WriteReg(NRF24L01_07_STATUS, 0x70);     // Clear data ready, data sent, and retransmit
     NRF24L01_WriteReg(NRF24L01_11_RX_PW_P0, V2X2_PAYLOAD_SIZE);  // bytes of data payload for pipe 0
