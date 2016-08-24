@@ -47,6 +47,7 @@
 #define MAG
 #define USE_MAG_IST8310
 
+
 #define BRUSHED_MOTORS
 
 #define USE_USART1
